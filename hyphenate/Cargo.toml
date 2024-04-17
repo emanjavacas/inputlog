@@ -1,0 +1,12 @@
+[package]
+name = "hyphenate"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenv = "0.15.0"
+hypher = "0.1.5"
+serde = { version = "1.0.197", features = ["derive"] }
+xml-rpc = "0.0.12"
