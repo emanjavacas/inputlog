@@ -31,13 +31,13 @@ async def lifespan(app: FastAPI):
     # load models
     # MODELS['nlp'] = {'en': spacy_stanza.load_pipeline('en', download_method=None),
                     #  'nl': spacy_stanza.load_pipeline('nl', download_method=None)}
-    MODELS['nlp'] = {'en': spacy.load('en_core_web_trf'),
-                     'es': spacy.load('es_dep_news_trf'),
-                     'de': spacy.load('de_dep_news_trf'),
-                     'fr': spacy.load('fr_dep_news_trf'),
-                     'nl': spacy.load('nl_core_news_lg')}
+    MODELS['nlp'] = {'en': spacy.load(settings.EN_MODEL),
+                     'es': spacy.load(settings.ES_MODEL),
+                     'de': spacy.load(settings.DE_MODEL),
+                     'fr': spacy.load(settings.FR_MODEL),
+                     'nl': spacy.load(settings.NL_MODEL)}
     MODELS['syl'] = xmlrpc.client.ServerProxy(
-        "http://127.0.0.1:{}".format(settings.HYPHENATERPCPORT))
+        f"http://127.0.0.1:{settings.HYPHENATERPCPORT}")
     # language detection
     MODELS['lingua'] = LanguageDetectorBuilder.from_languages(
         Language.ENGLISH, 
@@ -115,6 +115,16 @@ async def analyze(
 
 
 if __name__ == '__main__':
+    import sys
+    import subprocess
+    import spacy
+
+    models = [settings.EN_MODEL, settings.ES_MODEL, settings.NL_MODEL, settings.FR_MODEL, settings.DE_MODEL]
+    for model in models:
+        if not spacy.util.is_package(model):
+            print("Installing ", model)
+            subprocess.check_call([sys.executable, "-m", "spacy", "download", model])
+
     import uvicorn
     uvicorn.run("main:app",
                 host='0.0.0.0',
