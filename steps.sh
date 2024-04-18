@@ -1,6 +1,7 @@
 
 # Install rust
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+
 # Install hyphenation server
 cd ./hyphenate
 cargo build
@@ -14,7 +15,7 @@ pip install poetry
 poetry install
 
 # Run RPC server for hyphenation
-cargo run --manifest-path hyphenate/Cargo.toml
+cargo run --manifest-path hyphenate/Cargo.toml &
 
 # Run API
 python main.py
