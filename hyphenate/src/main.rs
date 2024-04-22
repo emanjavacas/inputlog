@@ -17,19 +17,19 @@ struct HyphenParams {
     pub delimiter: String,
 }
 
+fn parse_lang(lang: &str) -> Lang {
+    match lang {
+        "en" => Lang::English,
+        "nl" => Lang::Dutch,
+        "es" => Lang::Spanish,
+        "fr" => Lang::French,
+        "de" => Lang::German,
+        _ => Lang::English
+    }
+}
 
 fn do_hyphenate(h: HyphenParams) -> Result<String, Fault> {
-    let _english = String::from("en");
-    let _dutch = String::from("nl");
-
-    let syllables = 
-        if h.lang == _english {
-            hyphenate(h.word.as_str(), Lang::English)
-        } else if h.lang == _dutch {
-            hyphenate(h.word.as_str(), Lang::Dutch)
-        } else { // default to english
-            hyphenate(h.word.as_str(), Lang::English)
-    };
+    let syllables = hyphenate(h.word.as_str(), parse_lang(&h.lang));
     Ok(syllables.join(h.delimiter.as_str()))
 }
 

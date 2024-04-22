@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 dotenv = "0.15.0"
-hypher = "0.1.5"
+hypher = { version = "0.1.5", default-features = false, features = ["english", "spanish", "german", "dutch", "french", "alloc" ] }
+lazy_static = "1.4.0"
 serde = { version = "1.0.197", features = ["derive"] }
 xml-rpc = "0.0.12"

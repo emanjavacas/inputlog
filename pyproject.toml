@@ -13,6 +13,7 @@ fastapi = "^0.110.1"
 lingua-language-detector = "^2.0.2"
 typing-extensions = "^4.11.0"
 pydantic-settings = "^2.2.1"
+lxml = "^5.2.1"
 
 
 [build-system]
