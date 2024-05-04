@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     DE_MODEL: str
     FR_MODEL: str
     NL_MODEL: str
+    EN_FREQS: str
+    ES_FREQS: str
+    DE_FREQS: str
+    FR_FREQS: str
+    NL_FREQS: str
     model_config = SettingsConfigDict(env_file=".env")
 
 

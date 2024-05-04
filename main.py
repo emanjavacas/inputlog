@@ -26,11 +26,19 @@ def detect_language(sentence):
     return lang
 
 
+def read_freqs(path):
+    d = {}
+    with open(path) as f:
+        for line in f:
+            w, freq = line.strip().split()
+            d[w] = int(freq)
+    total = sum(d.values())
+    return {w.lower(): freq/total for w, freq in d.items()}
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # load models
-    # MODELS['nlp'] = {'en': spacy_stanza.load_pipeline('en', download_method=None),
-                    #  'nl': spacy_stanza.load_pipeline('nl', download_method=None)}
     MODELS['nlp'] = {'en': spacy.load(settings.EN_MODEL),
                      'es': spacy.load(settings.ES_MODEL),
                      'de': spacy.load(settings.DE_MODEL),
@@ -38,6 +46,7 @@ async def lifespan(app: FastAPI):
                      'nl': spacy.load(settings.NL_MODEL)}
     MODELS['syl'] = xmlrpc.client.ServerProxy(
         f"http://127.0.0.1:{settings.HYPHENATERPCPORT}")
+    
     # language detection
     MODELS['lingua'] = LanguageDetectorBuilder.from_languages(
         Language.ENGLISH, 
@@ -46,6 +55,13 @@ async def lifespan(app: FastAPI):
         Language.SPANISH,
         Language.FRENCH
     ).build()
+    
+    # freqs
+    MODELS['freqs'] = {'en': read_freqs(settings.EN_FREQS),
+                       'es': read_freqs(settings.ES_FREQS),
+                       'de': read_freqs(settings.DE_FREQS),
+                       'fr': read_freqs(settings.FR_FREQS),
+                       'nl': read_freqs(settings.NL_FREQS)}
 
     yield
     # unload models
@@ -109,7 +125,8 @@ async def analyze(
                        'lemma': token.lemma_,
                        'pos': token.pos_,
                        'dep': token.dep_,
-                       'entity': token.ent_type})
+                       'entity': token.ent_type,
+                       'freq': MODELS['freqs'][lang].get(token.text.lower(), 0)})
 
     return {'output': output, 'meta': {'detectedLang': detected_lang, 'lang': lang}}
 
