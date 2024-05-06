@@ -17,10 +17,10 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 <!-- [![Forks][forks-shield]][forks-url] -->
-[![Contributors][contributors-shield]][contributors-url]
+<!-- [![Contributors][contributors-shield]][contributors-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+[![MIT License][license-shield]][license-url] -->
 <!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
 
