@@ -1,22 +1,24 @@
 
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Dict, List, Any
 
+
+class Language(BaseModel):
+    MODEL: str
+    FREQS: str
 
 class Settings(BaseSettings):
     PORT: int
     HYPHENATERPCPORT: int
     DELIMITER: str
-    EN_MODEL: str
-    ES_MODEL: str
-    DE_MODEL: str
-    FR_MODEL: str
-    NL_MODEL: str
-    EN_FREQS: str
-    ES_FREQS: str
-    DE_FREQS: str
-    FR_FREQS: str
-    NL_FREQS: str
-    model_config = SettingsConfigDict(env_file=".env")
+    NL: Language
+    DE: Language
+    FR: Language
+    ES: Language
+    EN: Language
+
+    model_config = SettingsConfigDict(env_file="settings.toml")
 
 
 settings = Settings()

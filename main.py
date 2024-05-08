@@ -1,7 +1,8 @@
 
+import math
+import pandas as pd
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query
-from pydantic import BaseModel
 from typing import List, Union
 from typing_extensions import Annotated
 import xmlrpc.client
@@ -15,6 +16,8 @@ from settings import settings
 
 
 MODELS = {}
+WEB1T = 1_024_908_267_229
+
 
 def detect_language(sentence):
     lang = MODELS['lingua'].detect_language_of(sentence)
@@ -26,27 +29,39 @@ def detect_language(sentence):
     return lang
 
 
+def safe_log(freq):
+    if freq < 1:
+        return 0
+    return math.log(freq)
+
+
 def read_freqs(path):
     d = {}
     with open(path) as f:
         for line in f:
             w, freq = line.strip().split()
             d[w] = int(freq)
+
+    result_log, result_rel = {}, {}
     total = sum(d.values())
-    return {w.lower(): freq/total for w, freq in d.items()}
+    for w, freq in d.items():
+        logfreq = safe_log(freq * WEB1T / total)
+        result_log[w.lower()] = logfreq
+        result_rel[w.lower()] = freq / total
+    return result_log, result_rel
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # load models
-    MODELS['nlp'] = {'en': spacy.load(settings.EN_MODEL),
-                     'es': spacy.load(settings.ES_MODEL),
-                     'de': spacy.load(settings.DE_MODEL),
-                     'fr': spacy.load(settings.FR_MODEL),
-                     'nl': spacy.load(settings.NL_MODEL)}
+    MODELS['nlp'] = {'en': spacy.load(settings.EN.MODEL),
+                     'es': spacy.load(settings.ES.MODEL),
+                     'de': spacy.load(settings.DE.MODEL),
+                     'fr': spacy.load(settings.FR.MODEL),
+                     'nl': spacy.load(settings.NL.MODEL)}
     MODELS['syl'] = xmlrpc.client.ServerProxy(
         f"http://127.0.0.1:{settings.HYPHENATERPCPORT}")
-    
+
     # language detection
     MODELS['lingua'] = LanguageDetectorBuilder.from_languages(
         Language.ENGLISH, 
@@ -55,13 +70,14 @@ async def lifespan(app: FastAPI):
         Language.SPANISH,
         Language.FRENCH
     ).build()
-    
+
     # freqs
-    MODELS['freqs'] = {'en': read_freqs(settings.EN_FREQS),
-                       'es': read_freqs(settings.ES_FREQS),
-                       'de': read_freqs(settings.DE_FREQS),
-                       'fr': read_freqs(settings.FR_FREQS),
-                       'nl': read_freqs(settings.NL_FREQS)}
+    MODELS['relfreq'] = {}
+    MODELS['logfreq'] = {}
+    for lang in MODELS['nlp']:
+        log_freq, freq_rel = read_freqs(settings.__getattribute__(lang.upper()).FREQS)
+        MODELS['logfreq'][lang] = log_freq
+        MODELS['relfreq'][lang] = freq_rel
 
     yield
     # unload models
@@ -94,6 +110,33 @@ async def read_root():
     return {'message': "Hello World"}
 
 
+def process_output(tokens, lang):
+    output = []
+    for token in tokens:
+
+        # syllabify
+        syll = MODELS['syl'].hyphenate(
+            {"word": token.text, "lang": lang, "delimiter": settings.DELIMITER}
+        ).split(settings.DELIMITER)
+
+        output.append({'#Chars': len(token.text),
+                       'Token': token.text,
+                       'PosA': token.pos_,
+                       'PosB': '-',
+                       'Pos-Prob': None,
+                       'Lemma': token.lemma_,
+                       'Lemma-Prob': None,
+                       'ChunkA': token.dep_,
+                       'ChunkB': '-',
+                       'NE': token.ent_type,
+                       'LogFreq': MODELS['logfreq'][lang].get(token.text.lower(), 0),
+                       'RelFreq': MODELS['relfreq'][lang].get(token.text.lower(), 0),
+                       'Syll': '-'.join(syll)
+                       })
+        
+    return pd.DataFrame.from_dict(output).to_csv()
+
+
 @app.get('/analyze/')
 async def analyze(
         sentence: Annotated[str, Query(description="Input sentence to annotate")],
@@ -112,21 +155,7 @@ async def analyze(
     doc = MODELS['nlp'][lang](sentence)
 
     # prepare output
-    output = []
-    for token in doc:
-
-        # syllabify
-        syls = MODELS['syl'].hyphenate(
-            {"word": token.text, "lang": lang, "delimiter": settings.DELIMITER}
-        ).split(settings.DELIMITER)
-
-        output.append({'token': token.text,
-                       'syllables': syls,
-                       'lemma': token.lemma_,
-                       'pos': token.pos_,
-                       'dep': token.dep_,
-                       'entity': token.ent_type,
-                       'freq': MODELS['freqs'][lang].get(token.text.lower(), 0)})
+    output = process_output(doc, lang)
 
     return {'output': output, 'meta': {'detectedLang': detected_lang, 'lang': lang}}
 
@@ -135,8 +164,12 @@ if __name__ == '__main__':
     import sys
     import subprocess
     import spacy
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
+    args = parser.parse_args()
 
-    models = [settings.EN_MODEL, settings.ES_MODEL, settings.NL_MODEL, settings.FR_MODEL, settings.DE_MODEL]
+    models = [settings.EN.MODEL, settings.ES.MODEL, settings.NL.MODEL, settings.FR.MODEL, settings.DE.MODEL]
     for model in models:
         if not spacy.util.is_package(model):
             print("Installing ", model)
@@ -146,5 +179,5 @@ if __name__ == '__main__':
     uvicorn.run("main:app",
                 host='0.0.0.0',
                 port=settings.PORT,
-                reload=True,
+                reload=args.debug,
                 workers=3)

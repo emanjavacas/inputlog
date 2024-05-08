@@ -1,0 +1,9 @@
+
+PORT = 8000
+HYPHENATERPCPORT = 8082
+DELIMITER = "#-#"
+EN = {"model": "en_core_web_trf", "freqs": "freqs/enwiki-2023-04-13.txt"}
+ES = {"model": "es_dep_news_trf", "freqs": "freqs/eswiki-2022-08-29.txt"}
+DE = {"model": "de_dep_news_trf", "freqs": "freqs/dewiki-2022-08-29.txt"}
+FR = {"model": "fr_dep_news_trf", "freqs": "freqs/frwiki-2022-08-29.txt"}
+NL = {"model": "nl_core_news_lg", "freqs": "freqs/nlwiki-2022-08-29.txt"}
