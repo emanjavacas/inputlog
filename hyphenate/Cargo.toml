@@ -11,3 +11,4 @@ hypher = { version = "0.1.5", default-features = false, features = ["english", "
 lazy_static = "1.4.0"
 serde = { version = "1.0.197", features = ["derive"] }
 xml-rpc = "0.0.12"
+toml = "0.6.0"

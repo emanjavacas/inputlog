@@ -1,3 +1,9 @@
 *.lock
-__pycache__
-environment/
+*.log
+
+__pycache__/
+venv/
+
+.DS_Store
+.vscode
+.python-version

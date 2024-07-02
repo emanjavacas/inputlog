@@ -1,21 +1,27 @@
 [tool.poetry]
 name = "inputlog"
 version = "0.1.0"
-description = ""
+description = "Linguistic Analysis system for Inputlog"
 authors = ["Enrique Manjavacas <enrique.manjavacas@gmail.com>"]
 readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 spacy = "^3.7.4"
 fastapi = "^0.110.1"
 lingua-language-detector = "^2.0.2"
 typing-extensions = "^4.11.0"
-pydantic-settings = "^2.2.1"
+pydantic-settings = {extras = ["toml"], version = "^2.3.4"}
 lxml = "^5.2.1"
 uvicorn = "^0.29.0"
-
+pandas = "^2.2.2"
+transformers = "4.30.2"
+torch = "1.10.2"
+benepar = "^0.2.0"
+spacy-stanza = "^1.0.4"
+toml = "^0.10.2"
+protobuf = "3.20.0"
 
 [build-system]
 requires = ["poetry-core"]

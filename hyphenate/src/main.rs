@@ -7,7 +7,7 @@ use xml_rpc::{Fault, Server};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use serde::{Serialize, Deserialize};
 use hypher::{hyphenate, Lang};
-use dotenv::dotenv;
+use toml::Table;
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -34,9 +34,14 @@ fn do_hyphenate(h: HyphenParams) -> Result<String, Fault> {
 }
 
 fn main() {
-    dotenv().ok();
-    let port = std::env::var("HYPHENATERPCPORT").expect("HYPHENATERPCPORT must be set");
-    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port.parse::<u16>().unwrap());
+    let path = std::path::Path::new("settings.toml");
+    let file = match std::fs::read_to_string(path) {
+        Ok(f) => f,
+        Err(e) => panic!("{}", e),
+    };
+    let config: Table = file.parse().unwrap();
+    let port: i64 = config["hyphenate_rpc_port"].as_integer().unwrap();
+    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port as u16);
     let mut server = Server::new();
 
     server.register_simple("hyphenate", &do_hyphenate);
