@@ -18,21 +18,21 @@ freqs_path = "freqs/eswiki-2022-08-29.txt"
 constituency = "stanza"
 constituency_path = "es"
 
-# [[languages]]
-# language = "de"
-# model_path = "de_dep_news_trf"
-# freqs_path = "freqs/dewiki-2022-08-29.txt"
-# constituency = "benepar"
-# constituency_path = "benepar_de2"
+[[languages]]
+language = "de"
+model_path = "de_dep_news_trf"
+freqs_path = "freqs/dewiki-2022-08-29.txt"
+constituency = "benepar"
+constituency_path = "benepar_de2"
 
-# [[languages]]
-# language = "fr"
-# model_path = "fr_dep_news_trf"
-# freqs_path = "freqs/frwiki-2022-08-29.txt"
-# constituency = 'benepar'
-# constituency_path = "benepar_fr2"
+[[languages]]
+language = "fr"
+model_path = "fr_dep_news_trf"
+freqs_path = "freqs/frwiki-2022-08-29.txt"
+constituency = 'benepar'
+constituency_path = "benepar_fr2"
 
-# [[languages]]
-# language = "nl"
-# model_path = "nl_core_news_lg"
-# freqs_path = "freqs/nlwiki-2022-08-29.txt"
+[[languages]]
+language = "nl"
+model_path = "nl_core_news_lg"
+freqs_path = "freqs/nlwiki-2022-08-29.txt"

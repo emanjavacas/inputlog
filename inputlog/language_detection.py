@@ -5,6 +5,10 @@ from lingua import Language, LanguageDetectorBuilder, IsoCode639_1
 logger = logging.getLogger(__name__)
 
 
+class UnknownLanguageException(Exception):
+    pass
+
+
 def get_language_from_code(code):
     return Language.from_iso_code_639_1(getattr(IsoCode639_1, code.upper()))
 
@@ -17,6 +21,7 @@ class LanguageDetector:
         detected = self.detector.detect_language_of(sentence)
         if detected is not None:
             return detected.iso_code_639_1.name.lower()
+        raise UnknownLanguageException
 
     def load(self, settings):
         logger.info("Loading language detection systems ...")
