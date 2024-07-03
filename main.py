@@ -1,11 +1,12 @@
 
+import uuid
 import traceback
 import logging
 from contextlib import asynccontextmanager
 
 import pandas as pd
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from typing import Union, List
 from typing_extensions import Annotated
 
@@ -81,9 +82,9 @@ def postprocess_output(tokens, columns, lang):
 
 @app.get('/analyze/')
 async def analyze(
-        text: Annotated[str, Query(description="Input sentence to annotate")],
-        lang: Annotated[Union[str, None], Query(description="Optional language of the input sentence")]=None,
-        columns: Annotated[Union[List[str], None], Query(description="Specify the desired order of the columns in the output")]=None):
+        text: str = Query(description="Input sentence to annotate"),
+        lang: str = Query(description="Optional language of the input sentence", default=None),
+        columns: List[str] = Query(description="Specify the desired order of the columns in the output", default=None)):
     """
     General endpoint to analyze a full input text.
     """
@@ -98,14 +99,13 @@ async def analyze(
         tokens = LinguisticsModel.process_text(text, lang)
         output = postprocess_output(tokens, columns, lang)
         return {'output': output, 'meta': {'detectedLang': detected_lang, 'language': lang}}
-    
-    except InvalidColumnsException as e:
-        return {"status": "error", "exception": e.args[0]}
-    except UnknownLanguageException as e:
-        return {"status": "error", "exception": e.args[0]}
+    except (InvalidColumnsException, UnknownLanguageException) as e:
+        raise HTTPException(status_code=400, detail=e.args[0]) from e
     except Exception as e:
+        code = str(uuid.uuid4())
+        logger.error(code)
         logger.error(traceback.format_exc())
-        return {"status": "unknown error"}
+        raise HTTPException(status_code=500, detail=f"Unknown server error: {code}") from e
 
 
 if __name__ == '__main__':
